@@ -72,7 +72,7 @@ def generate_plot(data_path, prompt=None,api_key=None):
         print(f"Directory '{directory_path}' already exists.")
     
     lida = Manager(text_gen = llm(provider="openai", api_key=api_key)) 
-    textgen_config = TextGenerationConfig(n=1, temperature=0, model="gpt-4", use_cache=True)
+    textgen_config = TextGenerationConfig(n=1, temperature=0, model="gpt-3.5-turbo-0613", use_cache=True)
     
     summary = lida.summarize(data_path, summary_method="default", textgen_config=textgen_config)  
     
