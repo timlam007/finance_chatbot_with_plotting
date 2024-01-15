@@ -76,10 +76,10 @@ def get_csv_file() -> Optional[str]:
     """
     import tempfile
     
-    st.header("Upload Document or Connect to a Databse")
+    st.header("Upload Document or Connect to a Database")
     
     uploaded_files = st.file_uploader(
-        label="Here, upload your documents you want AskMAY to use to answer",
+        label="Here, upload your documents",
         type= ["csv", 'xlsx', 'pdf','docx'],
         accept_multiple_files= True
     )
@@ -504,17 +504,7 @@ def main() -> None:
 
         # Display chat history
         # chat_history = []
-        messages = st.session_state.get("messages", [])
-        for message in messages:
-            if isinstance(message, AIMessage):
-                # chat_history.append({'assistant': message.content})
-                with st.chat_message("assistant"):
-                    st.markdown(message.content)
-            elif isinstance(message, HumanMessage):
-                # chat_history.append({'user': extract_userquesion_part_only(message.content)})
-                with st.chat_message("user"):
-                    st.markdown(extract_userquesion_part_only(message.content))
-
+        
         costs = st.session_state.get("costs", [])
         st.sidebar.markdown("## Costs")
         st.sidebar.markdown(f"**Total cost: ${sum(costs):.5f}**")
