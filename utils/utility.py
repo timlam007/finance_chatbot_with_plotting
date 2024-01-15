@@ -128,7 +128,7 @@ def classify_prompt(user_input):
                 
                 "{}"
         """
-    model = OpenAI()
+    model = OpenAI(model='gpt-3.5-turbo-0613')
     res = model.predict(prompt.format(user_input))
     if (res.strip() == "PLOT") or (res.strip() == "<PLOT>"):
         return True
