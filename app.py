@@ -1,6 +1,3 @@
-# __import__('pysqlite3')
-# import sys
-# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from agents.SQLagent import build_sql_agent
 from agents.csv_chat import build_csv_agent
 from utils import utility as ut
@@ -34,21 +31,6 @@ st.session_state.csv_file_paths = []
 
 
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-
-PROMPT_TEMPLATE = """
-Use the following pieces of context enclosed by triple backquotes to answer the question at the end.
-\n\n
-Context:
-```
-{context}
-```
-\n\n
-Question: [][][][]{question}[][][][]
-\n
-Answer:"""
-
-
-
 def open_ai_key():
     with st.sidebar:
         openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
@@ -269,41 +251,7 @@ def init_agent(model_name: str, temperature: float, **kwargs) -> Union[ChatOpenA
     """
     llm_agent = None  # Initialize llm_agent with a default value
     
-    if model_name.startswith("gpt-"):
-        llm =  ChatOpenAI(temperature=temperature, model_name=model_name)
-    
-    elif model_name.startswith("text-dav"):
-        llm =  OpenAI(temperature=temperature, model_name=model_name)
-    
-    elif model_name.startswith("llama-2-"):
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        llm = LlamaCpp(
-            streaming = False,
-            model_path=f"./models/{model_name}.bin",
-            temperature=0.75,
-            input={"temperature": temperature,
-                   "max_length": 2048,
-                   "top_p": 1,
-                   'n_gpu_layers':40,
-                   'n_batch':512,
-                   },
-            n_ctx=2048,
-            callback_manager=callback_manager,
-            verbose=False,  # True
-        )
-    elif model_name.startswith("zephyr-") or model_name.startswith("mistral-") or model_name.startswith("dolphin-"):
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        llm = LlamaCpp(
-                streaming = False,
-                model_path=f"./models/{model_name}.gguf",
-                temperature=0.75,
-                n_gpu_layers=40,
-                n_batch=512,
-                top_p=1,
-                verbose=True,
-                n_ctx=4096,
-                callback_manager=callback_manager,
-            )
+    llm =  ChatOpenAI(temperature=temperature, model_name=model_name)
     chain_mode = kwargs['chain_mode']
     if chain_mode == 'Database':
         rdbs = kwargs['rdbs']
@@ -431,47 +379,6 @@ def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
     if isinstance(llm, LlamaCpp):
         response = llm_chain.run(message)
         return response, 0.0
-
-
-def find_role(message: Union[SystemMessage, HumanMessage, AIMessage]) -> str:
-    """
-    Identify role name from langchain.schema object.
-    """
-    if isinstance(message, SystemMessage):
-        return "system"
-    if isinstance(message, HumanMessage):
-        return "user"
-    if isinstance(message, AIMessage):
-        return "assistant"
-    raise TypeError("Unknown message type.")
-
-
-def convert_langchainschema_to_dict(
-        messages: List[Union[SystemMessage, HumanMessage, AIMessage]]) \
-        -> List[dict]:
-    """
-    Convert the chain of chat messages in list of langchain.schema format to
-    list of dictionary format.
-    """
-    return [{"role": find_role(message),
-             "content": message.content
-             } for message in messages]
-
-
-
-def extract_userquesion_part_only(content):
-    """
-    Function to extract only the user question part from the entire question
-    content combining user question and pdf context.
-    """
-    content_split = content.split("[][][][]")
-    if len(content_split) == 3:
-        return content_split[1]
-    return content
-
-
-
-
 def main() -> None:
     import openai
     init_page()
@@ -482,7 +389,6 @@ def main() -> None:
         if 'history' not in st.session_state:
             st.session_state['history'] = []
 
-        openai.open_ai_key = "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"
         
         model_name, temperature, chain_mode = select_llm()
         embeddings = load_embeddings(model_name)
