@@ -26,9 +26,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 import os
 import pandas as pd
-# from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-os.environ["OPENAI_API_KEY"] = "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"#"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"
+#os.environ["OPENAI_API_KEY"] = "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"#"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"
 
 st.session_state.csv_file_paths = []
 
@@ -49,14 +49,14 @@ Answer:"""
 
 
 
-# def open_ai_key():
-#     with st.sidebar:
-#         openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
-#         "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
-#         if not openai_api_key:
-#             st.info("Please add your OpenAI API key to continue.")
-#             st.stop()
-#         os.environ["OPENAI_API_KEY"] = openai_api_key
+def open_ai_key():
+    with st.sidebar:
+        openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+        "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
+        if not openai_api_key:
+            st.info("Please add your OpenAI API key to continue.")
+            st.stop()
+    os.environ["OPENAI_API_KEY"] = openai_api_key
         
 @st.cache_data
 def dbActive():
@@ -370,8 +370,6 @@ def load_embeddings(model_name: str) -> Union[OpenAIEmbeddings, LlamaCppEmbeddin
     """
     if model_name.startswith("gpt-") or model_name.startswith("text-dav"):
         return OpenAIEmbeddings()
-    elif model_name.startswith("llama-2-"):
-        return LlamaCppEmbeddings(model_path=f"./models/{model_name}.bin")
     elif model_name.startswith("zephyr-") or model_name.startswith("mistral-"):
         return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -388,7 +386,7 @@ def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
                 if isinstance(llm_chain, ConversationalRetrievalChain):
                     history = st.session_state.messages.copy()
                     history.pop()
-                    llm_chain.memory.chat_memory.clear_messages()
+                    llm_chain.memory.chat_memory.clear()
                     for msg in st.session_state.messages:
                         if msg["role"] == "assistant":
                             llm_chain.memory.chat_memory.add_ai_message(msg["content"])
@@ -417,7 +415,7 @@ def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
                         with st.spinner("Generating chart"):
                             rationale, img_path  = ut.generate_plot(lida_data_path, message)
                             st.session_state.messages.append({"role": "assistant", "content": rationale, "img_path": img_path})
-                            ut.display(img_path, rationale)
+                            ut.display(img_path, " ")
                         answer = rationale
                     else:
                         answer = llm_chain.run(st.session_state.messages)
@@ -479,8 +477,8 @@ def main() -> None:
     init_page()
     dbActive()
     try:
-        # open_ai_key()
-        # _ = load_dotenv(find_dotenv())
+        open_ai_key()
+        _ = load_dotenv(find_dotenv())
         if 'history' not in st.session_state:
             st.session_state['history'] = []
 
@@ -569,7 +567,9 @@ def main() -> None:
                 if chroma:
                     if chain_mode == 'Documents':
                         with st.chat_message("assistant"):
+                            
                             answer, cost = get_answer(llm_chain,llm, prompt)
+                            
                             st.session_state.messages.append({"role": "assistant", "content": answer})
                             st.write(answer)
                     elif chain_mode == "CSV|Excel":
@@ -577,16 +577,17 @@ def main() -> None:
                         with st.spinner("Assistant is typing ..."):
                             try:
                                 answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
-                                # st.write(answer)
+                                #st.session_state.messages.append({"role": "assistant", "content": answer})
+                                st.write(answer)
                             except ValueError:
                                 st.error("Oops!!! Internal Error trying to generate answer")
-                elif chain_mode == "CSV|Excel":
-                        with st.spinner("Assistant is typing ..."):
-                            try:
-                                answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
-                                # st.write(answer)
-                            except ValueError:
-                                st.error("Oops!!! Internal Error trying to generate answer")
+                    elif chain_mode == "Database":
+                            with st.spinner("Assistant is typing ..."):
+                                try:
+                                    answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
+                                    # st.write(answer)
+                                except ValueError:
+                                    st.error("Oops!!! Internal Error trying to generate answer")
                             
                             
 
