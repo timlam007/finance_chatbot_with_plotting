@@ -28,6 +28,6 @@ lida==0.0.10
 langchain_experimental
 langchainhub
 seaborn==0.13.0
-
+pysqlite3-binary
 
 
