@@ -320,12 +320,8 @@ def load_embeddings(model_name: str) -> Union[OpenAIEmbeddings, LlamaCppEmbeddin
     """
     Load embedding model.
     """
-    if model_name.startswith("gpt-") or model_name.startswith("text-dav"):
+    if model_name.startswith("gpt-"):
         return OpenAIEmbeddings()
-    elif model_name.startswith("zephyr-") or model_name.startswith("mistral-"):
-        return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
-
 def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
     """
     Get the AI answer to user questions.
