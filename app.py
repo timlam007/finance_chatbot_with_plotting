@@ -348,6 +348,7 @@ def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
                     answer =  str(response['answer'])
                 else:
                     assert chain_type is not None
+                    
                     isplot = ut.classify_prompt(message)
                     if isplot:
                         if chain_type == "Database":
@@ -366,7 +367,8 @@ def get_answer(llm_chain,llm, message, chain_type=None) -> tuple[str, float]:
                             ut.display(img_path, " ")
                         answer = rationale
                     else:
-                        answer = llm_chain.run(st.session_state.messages)
+                        #llm_chain.memory.chat_memory = st.session_state.messages
+                        answer = llm_chain.run(message)
                         st.session_state.messages.append({"role": "assistant", "content": answer})
                         #st.write(answer)
             except langchain.schema.output_parser.OutputParserException as e:
@@ -470,32 +472,33 @@ def main() -> None:
             print(chain_mode,'---------------------------------')
             try:
                 assert type(llm_chain) != type(None)
-                if chroma:
-                    if chain_mode == 'Documents':
-                        with st.chat_message("assistant"):
-                            
-                            answer, cost = get_answer(llm_chain,llm, prompt)
-                            
+                
+                if chain_mode == 'Documents':
+                    with st.chat_message("assistant"):
+                        
+                        answer, cost = get_answer(llm_chain,llm, prompt)
+                        
+                        st.session_state.messages.append({"role": "assistant", "content": answer})
+                        st.write(answer)
+                elif chain_mode == "CSV|Excel":
+                    assert type(llm_chain) != type(None)
+                    
+                    with st.spinner("Assistant is typing ..."):
+                        try:
+                            answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
                             st.session_state.messages.append({"role": "assistant", "content": answer})
                             st.write(answer)
-                    elif chain_mode == "CSV|Excel":
-                        assert type(llm_chain) != type(None)
+                            st.session_state.costs.append(cost)
+                        except ValueError:
+                            st.error("Oops!!! Internal Error trying to generate answer")
+                elif chain_mode == "Database":
                         with st.spinner("Assistant is typing ..."):
                             try:
                                 answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
-                                st.session_state.messages.append({"role": "assistant", "content": answer})
                                 st.write(answer)
                                 st.session_state.costs.append(cost)
                             except ValueError:
                                 st.error("Oops!!! Internal Error trying to generate answer")
-                    elif chain_mode == "Database":
-                            with st.spinner("Assistant is typing ..."):
-                                try:
-                                    answer, cost = get_answer(llm_chain,llm, prompt, chain_type=chain_mode)
-                                    st.write(answer)
-                                    st.session_state.costs.append(cost)
-                                except ValueError:
-                                    st.error("Oops!!! Internal Error trying to generate answer")
 
                 
             except AssertionError:
