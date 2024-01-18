@@ -28,7 +28,8 @@ lida==0.0.10
 langchain_experimental
 langchainhub
 seaborn==0.13.0
-pysqlite3-binary
+# pysqlite3-binary
+pysqlite-binary==0.5.1.3380300
 protobuf>=3.13.0
 streamlit_jupyter
 ipywidgets<=8.*
