@@ -29,5 +29,6 @@ langchain_experimental
 langchainhub
 seaborn==0.13.0
 pysqlite3-binary
-
-
+protobuf>=3.13.0
+streamlit_jupyter
+ipywidgets<=8.*

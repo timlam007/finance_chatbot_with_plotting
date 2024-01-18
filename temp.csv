@@ -1,4 +1,4 @@
-Year,Industry,Revenue__millions_,Expenses__millions_,Net_Income__millions_,Assets__millions_,Liabilities__millions_
+Year,Industry,Revenue (millions),Expenses (millions),Net Income (millions),Assets (millions),Liabilities (millions)
 2021,Agriculture,6879,2305,3194,8048,3149
 2021,Manufacturing,5320,1842,4856,4677,6818
 2021,Technology,4056,3395,2247,9006,1024
